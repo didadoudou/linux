@@ -798,6 +798,19 @@ const struct usb_device_id *usb_match_id(struct usb_interface *interface,
 }
 EXPORT_SYMBOL_GPL(usb_match_id);
 
+void usb_device_id_dump(const struct usb_device_id *id)
+{
+	for (; id->idVendor || id->idProduct || id->bDeviceClass ||
+	       id->bInterfaceClass || id->driver_info; id++) {
+		char buffer[128];
+		int size = (char *)&id->driver_info - (char *)id;
+		bin2hex((char *)&buffer[0], (const char *)id, size);
+		buffer[size * 2] = 0;
+		pr_err("%s\n", &buffer[0]);
+	}
+}
+
+
 static int usb_device_match(struct device *dev, struct device_driver *drv)
 {
 	/* devices and interfaces are handled separately */
@@ -821,6 +834,9 @@ static int usb_device_match(struct device *dev, struct device_driver *drv)
 
 		intf = to_usb_interface(dev);
 		usb_drv = to_usb_driver(drv);
+
+		if (usb_drv->id_table != NULL)
+			usb_device_id_dump(usb_drv->id_table);
 
 		id = usb_match_id(intf, usb_drv->id_table);
 		if (id)
