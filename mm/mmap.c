@@ -2221,6 +2221,11 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	struct rb_node *rb_node;
 	struct vm_area_struct *vma;
 
+if (addr != untagged_addr(addr)) {
+pr_err("! addr: %lx\n", addr);
+BUG_ON(1);
+}
+
 	/* Check the cache first. */
 	vma = vmacache_find(mm, addr);
 	if (likely(vma))
